@@ -1,0 +1,66 @@
+name: CI Validation Workflow
+
+# Trigger: Jab bhi code push ho ya pull request aaye
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest   # GitHub ka virtual machine
+    
+    steps:
+      # Step A: GitHub se code uthao
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      # Step B: Node.js install karo
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      # Step C: Dependencies install karo (agar koi ho to)
+      - name: Install dependencies
+        run: npm install
+      
+      # Step D:  Automated validation tests run karo
+      - name: Run validation tests
+        run: node add.test.js > test-results.txt
+      
+      # Step E:  Validation evidence logs generate karo
+      - name: Generate evidence logs
+        run: |
+          echo "==========================" > validation-evidence.log
+          echo "Workflow Status: ${{ job.status }}" >> validation-evidence.log
+          echo "Run ID: ${{ github.run_id }}" >> validation-evidence.log
+          echo "Repository: ${{ github.repository }}" >> validation-evidence.log
+          echo "Branch: ${{ github.ref_name }}" >> validation-evidence.log
+          echo "Timestamp: $(date)" >> validation-evidence.log
+          echo "==========================" >> validation-evidence.log
+          echo "Test Results:" >> validation-evidence.log
+          cat test-results.txt >> validation-evidence.log
+      
+      # Step F:  Upload validation artifacts (evidence upload karo)
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: validation-evidence
+          path: |
+            test-results.txt
+            validation-evidence.log
+      
+      # Step G:  Display workflow execution status
+      - name: Display workflow status
+        run: |
+          echo "====================================="
+          echo "Workflow Run ID: ${{ github.run_id }}"
+          echo "Status: ${{ job.status }}"
+          if [ "${{ job.status }}" == "success" ]; then
+            echo " VALIDATION PASSED - All checks successful"
+          else
+            echo " VALIDATION FAILED - Please check logs"
+          fi
+          echo "====================================="
