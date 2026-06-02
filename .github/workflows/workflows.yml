@@ -14,11 +14,11 @@ jobs:
     steps:
       # Step A: GitHub se code uthao
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       # Step B: Node.js install karo
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
       
@@ -45,7 +45,7 @@ jobs:
       
       # Step F:  Upload validation artifacts (evidence upload karo)
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: validation-evidence
           path: |
